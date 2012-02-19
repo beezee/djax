@@ -1,6 +1,6 @@
 (function($, exports) {
     
-    $.fn.djax = function(selector) {
+    $.fn.djax = function(selector, exceptions) {
         
         var self = this;
         
@@ -46,8 +46,17 @@
         
         
         $('a.dJAX_internal').live('click', function(e) {
+            var link = $(this);
+           var exception = false;
+           console.log(exceptions);
+           $.each(exceptions, function(k, x) {
+            console.log(link.attr('href').indexOf(x));
+            console.log(x);
+             if (link.attr('href').indexOf(x) != -1) exception = true;
+             if (window.location.href.indexOf(x) != -1) exception = true;
+           });
+           if (exception) return;
            e.preventDefault();
-           var link = $(this);
            self.navigate(link.attr('href'), true);
         });
         
