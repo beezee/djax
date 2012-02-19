@@ -1,12 +1,15 @@
 (function($, exports) {
     
     $.fn.djax = function(selector, exceptions) {
+        if (!history.pushState) return $(this);
         
         var self = this;
         
         window.history.replaceState({'url': window.location.href, 'title' : $('title').text()}, $('title').text(), window.location.href);
         
         var blockSelector = selector;
+        
+        var excludes = (exceptions && exceptions.length) ? exceptions : [];
         
         self.navigate = function(url, add) {
             var blocks = $(blockSelector);
@@ -17,7 +20,6 @@
               $('title').text($(result).filter('title').text());
                   var newBlocks = [];
                   var newBlocks = $(result).find(blockSelector);
-                  console.log(newBlocks);
                   blocks.each(function() {
                       var id = '"#'+$(this).attr('id')+'"';
                       var newBlock = newBlocks.filter(id);
@@ -29,12 +31,10 @@
                   $.each(newBlocks, function() {
                      var newBlock = $(this);
                      var id = '#'+$(this).attr('id');
-                     console.log(id);
                      if (!$(id).length) {
                           var before = $(result).find(id).prev();
-                          console.log(before);
                           if (before.length) { var beforeID = '#'+ before.attr('id'); newBlock.insertAfter(beforeID); }
-                          else { var parentID = '#' + newBlock.parent().attr('id'); newBlock.prependTo(parentID); console.log(parentID);}
+                          else { var parentID = '#' + newBlock.parent().attr('id'); newBlock.prependTo(parentID); }
                      }
                       lastBlock = blocks.filter(id);
                   });
@@ -48,10 +48,7 @@
         $('a.dJAX_internal').live('click', function(e) {
             var link = $(this);
            var exception = false;
-           console.log(exceptions);
-           $.each(exceptions, function(k, x) {
-            console.log(link.attr('href').indexOf(x));
-            console.log(x);
+           $.each(excludes, function(k, x) {
              if (link.attr('href').indexOf(x) != -1) exception = true;
              if (window.location.href.indexOf(x) != -1) exception = true;
            });
@@ -62,11 +59,6 @@
         
         $(window).bind('popstate', function(event){
             var popped = false;
-            console.log(event);
-            console.log(window.history.state);
-            //console.log(event.originalEvent.state.url);
-            // Ignore inital popstate that some browsers fire on page load
-            //if( event.originalEvent.state.url) window.location.href = event.originalEvent.state.url;
             self.navigate(event.originalEvent.state.url);
         });
         
