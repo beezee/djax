@@ -16,24 +16,25 @@
               else window.history.replaceState({'url': url, 'title' : $(result).filter('title').text()}, $(result).filter('title').text(), url);
               $('title').text($(result).filter('title').text());
                   var newBlocks = [];
-                  var newBlocks = result.filter(function() {
-                    return ($(this).attr('id')); 
-                  });
+                  var newBlocks = $(result).find(blockSelector);
+                  console.log(newBlocks);
                   blocks.each(function() {
                       var id = '"#'+$(this).attr('id')+'"';
                       var newBlock = newBlocks.filter(id);
                       var block = $(this);
                       if (newBlock.length) {
-                          if (block.html() != newBlock.html()) block.html(newBlock.html());
+                          if (block.html() != newBlock.html()) block.replaceWith(newBlock);
                       } else block.remove();
                   });
-                  var lastBlock = newBlocks[0];
                   $.each(newBlocks, function() {
-                     var id = '"#'+$(this).attr('id');
-                     var newBlock = blocks.filter(id);
-                     if (!newBlock.length) {
-                          if ($(this) == lastBlock) $(this).insertBefore(blocks[0]);
-                          else $(this).insertAfter(lastBlock);
+                     var newBlock = $(this);
+                     var id = '#'+$(this).attr('id');
+                     console.log(id);
+                     if (!$(id).length) {
+                          var before = $(result).find(id).prev();
+                          console.log(before);
+                          if (before.length) { var beforeID = '#'+ before.attr('id'); newBlock.insertAfter(beforeID); }
+                          else { var parentID = '#' + newBlock.parent().attr('id'); newBlock.prependTo(parentID); console.log(parentID);}
                      }
                       lastBlock = blocks.filter(id);
                   });
