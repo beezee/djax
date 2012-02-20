@@ -2,7 +2,7 @@
 
 ##Basic usage
 
-djax is simple enough to set up, with a few markup requirements to let it work smoothly.
+djax is very quick to set up, with a few markup requirements to let it work smoothly.
 
 First include it in your header after jquery:
 
