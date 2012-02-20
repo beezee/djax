@@ -95,3 +95,5 @@ As a convenience, the data object passed with the event contains the requested u
 
 djax arose out of a desire to use [pjax](https://github.com/defunkt/jquery-pjax) with complicated and varied layouts. See [here](http://brianzeligson.com/djax) for a WordPress site using a modified version
 of the [bones](http://themble.com/bones/) WordPress theme. djax enabling this theme took about 7 lines of code (if you count adding a class to an element as a line of code.)
+
+There is also a small working example in the github repository. Feel free to load up any of the included html files in your browser to see how it works.
