@@ -39,6 +39,7 @@
                       lastBlock = blocks.filter(id);
                   });
                   $('a').filter(function() { return this.hostname == location.hostname; }).addClass('dJAX_internal');
+                  $(window).trigger('djaxLoad', [{'url': url, 'title' : $(result).filter('title').text()}]);
              });
           }
     
