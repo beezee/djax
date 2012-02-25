@@ -85,9 +85,9 @@ that do not contain admin, resources, or ?s= in the url.
 By loading new content via ajax, your visitors will only encounter $('document').ready() the first time they land on your site, and any time they manually perform a hard refresh. To help address this,
 djax triggers a window level event on each partial load it performs. Here's an example of enabling pageview tracking with Google Analytics on a djax enabled site:
 
-$(window).bind('djaxLoad', function(e, data) {
-    _gaq.push(['_trackPageview']);
-});
+    $(window).bind('djaxLoad', function(e, data) {
+        _gaq.push(['_trackPageview']);
+    });
 
 As a convenience, the data object passed with the event contains the requested url, and page title for the requested page.
 
