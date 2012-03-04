@@ -4,7 +4,7 @@
         if (!history.pushState) return $(this);
         
         var self = this;
-        
+                
         window.history.replaceState({'url': window.location.href, 'title' : $('title').text()}, $('title').text(), window.location.href);
         
         var blockSelector = selector;
@@ -16,7 +16,6 @@
              $.get(url, function(response) {
               var result = $('"'+response+'"');
               if (add) window.history.pushState({'url': url, 'title' : $(result).filter('title').text()}, $(result).filter('title').text(), url);
-              else window.history.replaceState({'url': url, 'title' : $(result).filter('title').text()}, $(result).filter('title').text(), url);
               $('title').text($(result).filter('title').text());
                   var newBlocks = [];
                   var newBlocks = $(result).find(blockSelector);
@@ -40,6 +39,7 @@
                   });
                   $('a').filter(function() { return this.hostname == location.hostname; }).addClass('dJAX_internal');
                   $(window).trigger('djaxLoad', [{'url': url, 'title' : $(result).filter('title').text()}]);
+                  if (url != self.reqUrl) self.navigate(self.reqUrl);
              });
           }
     
@@ -55,11 +55,12 @@
            });
            if (exception) return;
            e.preventDefault();
+           self.reqUrl = link.attr('href');
            self.navigate(link.attr('href'), true);
         });
         
         $(window).bind('popstate', function(event){
-            var popped = false;
+            self.reqUrl = event.originalEvent.state.url;
             self.navigate(event.originalEvent.state.url);
         });
         
