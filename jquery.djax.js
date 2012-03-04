@@ -2,6 +2,8 @@
     
     $.fn.djax = function(selector, exceptions) {
         if (!history.pushState) return $(this);
+        
+        var self = this;
                 
         window.history.replaceState({'url': window.location.href, 'title' : $('title').text()}, $('title').text(), window.location.href);
         
