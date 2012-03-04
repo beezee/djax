@@ -14,6 +14,7 @@
         self.navigate = function(url, add) {
             var blocks = $(blockSelector);
              $.get(url, function(response) {
+              if (url != self.reqUrl) { self.navigate(self.reqUrl); return; }
               var result = $('"'+response+'"');
               if (add) window.history.pushState({'url': url, 'title' : $(result).filter('title').text()}, $(result).filter('title').text(), url);
               $('title').text($(result).filter('title').text());
@@ -39,7 +40,6 @@
                   });
                   $('a').filter(function() { return this.hostname == location.hostname; }).addClass('dJAX_internal');
                   $(window).trigger('djaxLoad', [{'url': url, 'title' : $(result).filter('title').text()}]);
-                  if (url != self.reqUrl) self.navigate(self.reqUrl);
              });
           }
     
