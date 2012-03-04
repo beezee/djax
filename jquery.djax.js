@@ -14,7 +14,7 @@
         self.navigate = function(url, add) {
             var blocks = $(blockSelector);
              $.get(url, function(response) {
-              if (url != self.reqUrl) { self.navigate(self.reqUrl); return; }
+              if (url != self.reqUrl) { self.navigate(self.reqUrl); return true; }
               var result = $('"'+response+'"');
               if (add) window.history.pushState({'url': url, 'title' : $(result).filter('title').text()}, $(result).filter('title').text(), url);
               $('title').text($(result).filter('title').text());
@@ -39,7 +39,8 @@
                       lastBlock = blocks.filter(id);
                   });
                   $('a').filter(function() { return this.hostname == location.hostname; }).addClass('dJAX_internal');
-                  $(window).trigger('djaxLoad', [{'url': url, 'title' : $(result).filter('title').text()}]);
+                  if (!self.triggered) $(window).trigger('djaxLoad', [{'url': url, 'title' : $(result).filter('title').text()}]);
+                  self.triggered = true;
              });
           }
     
@@ -56,10 +57,12 @@
            if (exception) return;
            e.preventDefault();
            self.reqUrl = link.attr('href');
+           self.triggered = false;
            self.navigate(link.attr('href'), true);
         });
         
         $(window).bind('popstate', function(event){
+            self.triggered = false;
             self.reqUrl = event.originalEvent.state.url;
             self.navigate(event.originalEvent.state.url);
         });
