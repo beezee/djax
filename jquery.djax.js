@@ -16,7 +16,6 @@
              $.get(url, function(response) {
               var result = $('"'+response+'"');
               if (add) window.history.pushState({'url': url, 'title' : $(result).filter('title').text()}, $(result).filter('title').text(), url);
-              //else window.history.replaceState({'url': url, 'title' : $(result).filter('title').text()}, $(result).filter('title').text(), url);
               $('title').text($(result).filter('title').text());
                   var newBlocks = [];
                   var newBlocks = $(result).find(blockSelector);
