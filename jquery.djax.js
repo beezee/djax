@@ -54,8 +54,9 @@
              if (link.attr('href').indexOf(x) != -1) exception = true;
              if (window.location.href.indexOf(x) != -1) exception = true;
            });
-           if (exception) return;
+           if (exception) return $(this);
            e.preventDefault();
+           $(window).trigger('djaxClick');
            self.reqUrl = link.attr('href');
            self.triggered = false;
            self.navigate(link.attr('href'), true);
