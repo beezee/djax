@@ -82,6 +82,8 @@ that do not contain admin, resources, or ?s= in the url.
     
 ##Events
 
+###djaxLoad
+
 By loading new content via ajax, your visitors will only encounter $('document').ready() the first time they land on your site, and any time they manually perform a hard refresh. To help address this,
 djax triggers a window level event on each partial load it performs. Here's an example of enabling pageview tracking with Google Analytics on a djax enabled site:
 
@@ -89,7 +91,22 @@ djax triggers a window level event on each partial load it performs. Here's an e
         _gaq.push(['_trackPageview']);
     });
 
-As a convenience, the data object passed with the event contains the requested url, and page title for the requested page.
+As a convenience, the data object passed with the event contains the requested url, the page title for the requested page, and the contents of the requested page as a string. Use something like the following
+code to work with the response as a jQuery object
+
+    $(window).bind('djaxLoad', function(e, data) {
+        var responseObj = $('<div>'+data.response+'</div>');
+        //do stuff here
+    });
+    
+###djaxClick
+
+This event is triggered when a djax'ed link is clicked. Use something like the code below to scroll top before loading in new content with ajax:
+
+    $(window).bind('djaxClick', function(e, data) {
+            var bodyelem = ($.browser.safari) ? bodyelem = $("body") : bodyelem = $("html,body");
+            bodyelem.scrollTop(0);	
+    });
 
 ##Live Demo
 
