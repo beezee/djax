@@ -70,7 +70,10 @@
         <script type="text/javascript" src="jquery.djax.js"></script>
         <script type="text/javascript">
             jQuery('document').ready(function($) {
-               $('body').djax('.one-third'); 
+               $('body').djax('.one-third');
+               $(window).bind('djaxLoad', function(e, params) {
+                console.log($('<div>'+params.response+'</div>'));
+               })
             });
         </script>
 
