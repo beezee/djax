@@ -23,7 +23,8 @@
         if (!history.pushState) return $(this);
         
         var self = this;
-                
+        
+        self.djaxing = false;       
         window.history.replaceState({'url': window.location.href, 'title' : $('title').text()}, $('title').text(), window.location.href);
         
         var blockSelector = selector;
@@ -39,6 +40,7 @@
            });
            if (exception) return $(el);
            e.preventDefault();
+           if (self.djaxing) return $(el);
            $(window).trigger('djaxClick');
            self.reqUrl = link.attr('href');
            self.triggered = false;
@@ -47,6 +49,7 @@
         
         self.navigate = function(url, add) {
             var blocks = $(blockSelector);
+            self.djaxing = true;
              $.get(url, function(response) {
               if (url != self.reqUrl) { self.navigate(self.reqUrl); return true; }
               var result = $('"'+response+'"');
@@ -77,6 +80,7 @@
                     });
                   if (!self.triggered) $(window).trigger('djaxLoad', [{'url': url, 'title' : $(result).filter('title').text(), 'response' : response}]);
                   self.triggered = true;
+                  self.djaxing = false;
              });
           }
     
@@ -89,6 +93,7 @@
         
         $(window).bind('popstate', function(event){
             self.triggered = false;
+            self.djaxing = false;
             if (event.originalEvent.state)
             {
                 self.reqUrl = event.originalEvent.state.url;
