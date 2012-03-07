@@ -130,8 +130,7 @@
 
 					var newBlock = $(this),
 					    id = '#' + $(this).attr('id'),
-					    $previousSibling,
-						lastBlock;
+					    $previousSibling;
 
 					// If there is a new page block without an equivalent block
 					// in the old page, we need to find out where to insert it
@@ -148,8 +147,6 @@
 							newBlock.prependTo('#' + newBlock.parent().attr('id'));
 						}
 					}
-
-					lastBlock = blocks.filter(id);
 
 				});
 
