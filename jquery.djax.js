@@ -18,6 +18,17 @@
 *
 */
 
+/*jslint browser: true, indent: 4, maxerr: 50, sub: true */
+/*jshint bitwise:true, curly:true, eqeqeq:true, forin:true, immed:true, latedef:true, noarg:true, noempty:true, nomen:true, nonew:true, onevar:true, plusplus:true, regexp:true, smarttabs:true, strict:true, trailing:true, undef:true, white:true, browser:true, jquery:true, indent:4, maxerr:50, */
+/*global jQuery */
+
+// ==ClosureCompiler==
+// @compilation_level ADVANCED_OPTIMIZATIONS
+// @output_file_name jquery.djax.js
+// @externs_url http://closure-compiler.googlecode.com/svn/trunk/contrib/externs/jquery-1.7.js
+// ==/ClosureCompiler==
+// http://closure-compiler.appspot.com/home
+
 (function ($, exports) {
 	'use strict';
 
