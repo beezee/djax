@@ -17,6 +17,7 @@
 *   Brian Zeligson github @beezee
 *
 */
+
 (function ($, exports) {
 	'use strict';
 
@@ -87,7 +88,7 @@
 			// Get the new page
 			$.get(url, function (response) {
 				if (url !== self.reqUrl) {
-					self.navigate(self.reqUrl);
+					self.navigate(self.reqUrl, false);
 					return true;
 				}
 
@@ -189,7 +190,7 @@
 			self.djaxing = false;
 			if (event.originalEvent.state) {
 				self.reqUrl = event.originalEvent.state.url;
-				self.navigate(event.originalEvent.state.url);
+				self.navigate(event.originalEvent.state.url, false);
 			}
 		});
 
