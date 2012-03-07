@@ -57,11 +57,20 @@
 				}
 			});
 
-			if (exception || self.djaxing) {
+			// If the link is one of the exceptions, return early so that
+			// the link can be clicked and a full page load as normal
+			if (exception) {
 				return $(el);
 			}
 
+			// From this point on, we handle the behaviour
 			e.preventDefault();
+
+			// If we're already doing djaxing, return now and silently fail
+			if (self.djaxing) {
+				return $(el);
+			}
+
 			$(window).trigger('djaxClick');
 			self.reqUrl = link.attr('href');
 			self.triggered = false;
