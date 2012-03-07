@@ -1,7 +1,7 @@
 /*
 * jQuery djax
 *
-* @version v0.11
+* @version v0.12
 *
 * Copyright 2012, Brian Zeligson
 * Released under the MIT license.
@@ -18,7 +18,7 @@
 *
 */
 (function ($, exports) {
-    'use strict';
+	'use strict';
 
 	$.fn.djax = function (selector, exceptions) {
 
@@ -29,7 +29,18 @@
 
 		var self = this,
 		    blockSelector = selector,
-		    excludes = (exceptions && exceptions.length) ? exceptions : [];
+		    excludes = (exceptions && exceptions.length) ? exceptions : [],
+			djaxing = false;
+
+		// Ensure that the history is correct when going from 2nd page to 1st
+		window.history.replaceState(
+			{
+				'url' : window.location.href,
+				'title' : $('title').text()
+			},
+			$('title').text(),
+			window.location.href
+		);
 
 		// Exclude the link exceptions
 		self.attachClick = function (el, e) {
@@ -46,7 +57,7 @@
 				}
 			});
 
-			if (exception) {
+			if (exception || self.djaxing) {
 				return $(el);
 			}
 
@@ -61,6 +72,8 @@
 		self.navigate = function (url, add) {
 
 			var blocks = $(blockSelector);
+
+			self.djaxing = true;
 
 			// Get the new page
 			$.get(url, function (response) {
@@ -148,6 +161,7 @@
 						}]
 					);
 					self.triggered = true;
+					self.djaxing = false;
 				}
 			});
 		}; /* End self.navigate */
@@ -165,6 +179,7 @@
 		// On new page load
 		$(window).bind('popstate', function (event) {
 			self.triggered = false;
+			self.djaxing = false;
 			if (event.originalEvent.state) {
 				self.reqUrl = event.originalEvent.state.url;
 				self.navigate(event.originalEvent.state.url);
