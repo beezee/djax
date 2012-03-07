@@ -97,7 +97,7 @@
 				if (add) {
 					window.history.pushState(
 						{
-							'url': url,
+							'url' : url,
 							'title' : $(result).filter('title').text()
 						},
 						$(result).filter('title').text(),
@@ -155,7 +155,7 @@
 				// Only add a class to internal links
 				$('a').filter(function () {
 					return this.hostname === location.hostname;
-				}).addClass('dJAX_internal').on('click', function (e) {
+				}).addClass('dJAX_internal').on('click.djax', function (e) {
 					return self.attachClick(this, e);
 				});
 
@@ -164,7 +164,7 @@
 					$(window).trigger(
 						'djaxLoad',
 						[{
-							'url': url,
+							'url' : url,
 							'title' : $(result).filter('title').text(),
 							'response' : response
 						}]
@@ -181,7 +181,7 @@
 		}).addClass('dJAX_internal');
 
 
-		$('a.dJAX_internal').on('click', function (e) {
+		$('a.dJAX_internal').on('click.djax', function (e) {
 			return self.attachClick(this, e);
 		});
 
