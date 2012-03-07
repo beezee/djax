@@ -130,21 +130,22 @@
 
 					var newBlock = $(this),
 					    id = '#' + $(this).attr('id'),
-					    before,
-					    beforeID,
-					    parentID,
+					    $previousSibling,
 						lastBlock;
 
+					// If there is a new page block without an equivalent block
+					// in the old page, we need to find out where to insert it
 					if (!$(id).length) {
 
-						before = $(result).find(id).prev();
+						// Find the previous sibling
+						$previousSibling = $(result).find(id).prev();
 
-						if (before.length) {
-							beforeID = '#' + before.attr('id');
-							newBlock.insertAfter(beforeID);
+						if ($previousSibling.length) {
+							// Insert after the previous element
+							newBlock.insertAfter('#' + $previousSibling.attr('id'));
 						} else {
-							parentID = '#' + newBlock.parent().attr('id');
-							newBlock.prependTo(parentID);
+							// There's no previous sibling, so prepend to parent instead
+							newBlock.prependTo('#' + newBlock.parent().attr('id'));
 						}
 					}
 
