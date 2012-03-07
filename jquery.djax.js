@@ -43,16 +43,16 @@
 		);
 
 		// Exclude the link exceptions
-		self.attachClick = function (el, e) {
+		self.attachClick = function (element, event) {
 
-			var link = $(el),
+			var link = $(element),
 				exception = false;
 
-			$.each(excludes, function (k, x) {
-				if (link.attr('href').indexOf(x) !== -1) {
+			$.each(excludes, function (index, exclusion) {
+				if (link.attr('href').indexOf(exclusion) !== -1) {
 					exception = true;
 				}
-				if (window.location.href.indexOf(x) !== -1) {
+				if (window.location.href.indexOf(exclusion) !== -1) {
 					exception = true;
 				}
 			});
@@ -60,15 +60,15 @@
 			// If the link is one of the exceptions, return early so that
 			// the link can be clicked and a full page load as normal
 			if (exception) {
-				return $(el);
+				return $(element);
 			}
 
 			// From this point on, we handle the behaviour
-			e.preventDefault();
+			event.preventDefault();
 
 			// If we're already doing djaxing, return now and silently fail
 			if (self.djaxing) {
-				return $(el);
+				return $(element);
 			}
 
 			$(window).trigger('djaxClick');
@@ -153,8 +153,8 @@
 				// Only add a class to internal links
 				$('a').filter(function () {
 					return this.hostname === location.hostname;
-				}).addClass('dJAX_internal').on('click.djax', function (e) {
-					return self.attachClick(this, e);
+				}).addClass('dJAX_internal').on('click.djax', function (event) {
+					return self.attachClick(this, event);
 				});
 
 				// Trigger djaxLoad event as a pseudo ready()
@@ -179,8 +179,8 @@
 		}).addClass('dJAX_internal');
 
 
-		$('a.dJAX_internal').on('click.djax', function (e) {
-			return self.attachClick(this, e);
+		$('a.dJAX_internal').on('click.djax', function (event) {
+			return self.attachClick(this, event);
 		});
 
 		// On new page load
