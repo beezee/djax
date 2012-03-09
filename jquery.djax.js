@@ -165,7 +165,7 @@
 				// Only add a class to internal links
 				$('a').filter(function () {
 					return this.hostname === location.hostname;
-				}).addClass('dJAX_internal').on('click.djax', function (event) {
+				}).addClass('dJAX_internal').on('click', function (event) {
 					return self.attachClick(this, event);
 				});
 
@@ -191,7 +191,7 @@
 		}).addClass('dJAX_internal');
 
 
-		$('a.dJAX_internal').on('click.djax', function (event) {
+		$('a.dJAX_internal').on('click', function (event) {
 			return self.attachClick(this, event);
 		});
 
