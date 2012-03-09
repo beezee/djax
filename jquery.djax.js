@@ -1,7 +1,7 @@
 /*
 * jQuery djax
 *
-* @version v0.12
+* @version v0.121
 *
 * Copyright 2012, Brian Zeligson
 * Released under the MIT license.
@@ -12,6 +12,9 @@
 *
 * Authors:
 *   Brian Zeligson
+*
+* Contributors:
+*   Gary Jones github @GaryJones
 *
 * Maintainer:
 *   Brian Zeligson github @beezee
@@ -188,17 +191,13 @@
 		// Only add a class to internal links
 		$(this).find('a').filter(function () {
 			return this.hostname === location.hostname;
-		}).addClass('dJAX_internal');
-
-
-		$('a.dJAX_internal').on('click', function (event) {
+		}).addClass('dJAX_internal').on('click', function (event) {
 			return self.attachClick(this, event);
 		});
 
 		// On new page load
 		$(window).bind('popstate', function (event) {
 			self.triggered = false;
-			self.djaxing = false;
 			if (event.originalEvent.state) {
 				self.reqUrl = event.originalEvent.state.url;
 				self.navigate(event.originalEvent.state.url, false);
