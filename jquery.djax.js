@@ -1,7 +1,7 @@
 /*
 * jQuery djax
 *
-* @version v0.12
+* @version v0.122
 *
 * Copyright 2012, Brian Zeligson
 * Released under the MIT license.
@@ -12,6 +12,9 @@
 *
 * Authors:
 *   Brian Zeligson
+*
+* Contributors:
+*  Gary Jones @GaryJones
 *
 * Maintainer:
 *   Brian Zeligson github @beezee
