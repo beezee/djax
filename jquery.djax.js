@@ -1,19 +1,17 @@
 /*
 * jQuery djax
 *
-* @version v0.121
+* @version v0.12
 *
 * Copyright 2012, Brian Zeligson
 * Released under the MIT license.
 * http://www.opensource.org/licenses/mit-license.php
 *
+* Homepage:
 *   http://beezee.github.com/djax.html
 *
 * Authors:
 *   Brian Zeligson
-*
-* Contributors:
-*   Gary Jones github @GaryJones
 *
 * Maintainer:
 *   Brian Zeligson github @beezee
@@ -55,6 +53,10 @@
 			$('title').text(),
 			window.location.href
 		);
+		
+		self.clearDjaxing = function() {
+			self.djaxing = false;
+		}
 
 		// Exclude the link exceptions
 		self.attachClick = function (element, event) {
@@ -82,6 +84,7 @@
 
 			// If we're already doing djaxing, return now and silently fail
 			if (self.djaxing) {
+				setTimeout(self.clearDjaxing, 1000);
 				return $(element);
 			}
 
