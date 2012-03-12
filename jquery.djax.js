@@ -7,7 +7,6 @@
 * Released under the MIT license.
 * http://www.opensource.org/licenses/mit-license.php
 *
-* Homepage:
 *   http://beezee.github.com/djax.html
 *
 * Authors:
