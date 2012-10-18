@@ -131,7 +131,7 @@
 				// Loop through each block and find new page equivalent
 				blocks.each(function () {
 
-					var id = '"#' + $(this).attr('id') + '"',
+					var id = '#' + $(this).attr('id'),
 					    newBlock = newBlocks.filter(id),
 					    block = $(this);
 
