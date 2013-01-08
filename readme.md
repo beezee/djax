@@ -83,7 +83,7 @@ that do not contain admin, resources, or ?s= in the url.
 ##DOM Replacement Callbacks (optional)
 
 Pass in a reference to a function that will handle the DOM replacement logic. The default djax replacement uses the standard jQuery `replaceWith` and does an immediate replace. For transitions, fade in/outs etc, you can control when and how the new content displays on
-the page
+the page. The following example fades out the old content, and fades in the new content.
 
     <script type="text/javascript">
         var transition = function($content) {
@@ -98,7 +98,7 @@ the page
             });
         }
         jQuery(document).ready(function($) {
-            $('body').djax('.djaxable', ['admin', 'resources', '?s=']);
+            $('body').djax('.djaxable', [], transition);
         });
     </script>
 
