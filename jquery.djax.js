@@ -106,7 +106,14 @@
 			self.djaxing = true;
 
 			// Get the new page
-			$.get(url, function (response) {
+			$(window).trigger(
+				'djaxLoading',
+				[{
+					'url' : url
+				}]
+			);
+
+			var replaceBlocks = function (response) {
 				if (url !== self.reqUrl) {
 					self.navigate(self.reqUrl, false);
 					return true;
@@ -193,6 +200,13 @@
 					self.triggered = true;
 					self.djaxing = false;
 				}
+			};
+			$.get(url, function (response) {
+				replaceBlocks(response);
+			}).error(function (response) {
+				// handle error
+				console.log('error', response);
+				replaceBlocks(response['responseText']);
 			});
 		}; /* End self.navigate */
 
