@@ -79,7 +79,30 @@ that do not contain admin, resources, or ?s= in the url.
             $('body').djax('.djaxable', ['admin', 'resources', '?s=']);
         });
     </script>
-    
+
+##DOM Replacement Callbacks (optional)
+
+Pass in a reference to a function that will handle the DOM replacement logic. The default djax replacement uses the standard jQuery `replaceWith` and does an immediate replace. For transitions, fade in/outs etc, you can control when and how the new content displays on
+the page
+
+    <script type="text/javascript">
+        var transition = function($content) {
+            var el = this;      // reference to the DOM element that is about to be replaced
+            loading = false;
+            $content.hide();    // hide the new content before it comes in
+
+            el.fadeOut("fast", function() {
+                el.replaceWith($content);
+                $content.show();
+                el.fadeIn("fast");
+            });
+        }
+        jQuery(document).ready(function($) {
+            $('body').djax('.djaxable', ['admin', 'resources', '?s=']);
+        });
+    </script>
+
+
 ##Events
 
 ###djaxLoad

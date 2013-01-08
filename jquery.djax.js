@@ -35,7 +35,7 @@
 (function ($, exports) {
 	'use strict';
 
-	$.fn.djax = function (selector, exceptions) {
+	$.fn.djax = function (selector, exceptions, replaceBlockWithFunc) {
 
 		// If browser doesn't support pushState, abort now
 		if (!history.pushState) {
@@ -45,6 +45,7 @@
 		var self = this,
 		    blockSelector = selector,
 		    excludes = (exceptions && exceptions.length) ? exceptions : [],
+		    replaceBlockWith = (replaceBlockWithFunc) ? replaceBlockWithFunc : $.fn.replaceWith,
 			djaxing = false;
 
 		// Ensure that the history is correct when going from 2nd page to 1st
@@ -91,7 +92,7 @@
 				return $(element);
 			}
 
-			$(window).trigger('djaxClick');
+			$(window).trigger('djaxClick', [element]);
 			self.reqUrl = link.attr('href');
 			self.triggered = false;
 			self.navigate(link.attr('href'), true);
@@ -137,7 +138,7 @@
 
 					if (newBlock.length) {
 						if (block.html() !== newBlock.html()) {
-							block.replaceWith(newBlock);
+							replaceBlockWith.call(block, newBlock);
 						}
 					} else {
 						block.remove();
@@ -168,14 +169,16 @@
 						}
 					}
 
+									// Only add a class to internal links
+					$('a', newBlock).filter(function () {
+						return this.hostname === location.hostname;
+					}).addClass('dJAX_internal').on('click', function (event) {
+						return self.attachClick(this, event);
+					});
+
 				});
 
-				// Only add a class to internal links
-				$('a').filter(function () {
-					return this.hostname === location.hostname;
-				}).addClass('dJAX_internal').on('click', function (event) {
-					return self.attachClick(this, event);
-				});
+
 
 				// Trigger djaxLoad event as a pseudo ready()
 				if (!self.triggered) {
