@@ -111,7 +111,7 @@
 					return true;
 				}
 
-				var result = $('"' + response + '"'),
+				var result = $($.parseHTML(response)),
 				    newBlocks = $(result).find(blockSelector);
 
 				if (add) {
