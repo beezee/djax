@@ -142,7 +142,13 @@
 					var id = '#' + $(this).attr('id'),
 					    newBlock = newBlocks.filter(id),
 					    block = $(this);
-
+					
+					$('a', newBlock).filter(function () {
+						return this.hostname === location.hostname;
+					}).addClass('dJAX_internal').on('click', function (event) {
+						return self.attachClick(this, event);
+					});
+					
 					if (newBlock.length) {
 						if (block.html() !== newBlock.html()) {
 							replaceBlockWith.call(block, newBlock);
