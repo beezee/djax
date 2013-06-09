@@ -119,8 +119,8 @@
 					return true;
 				}
 
-				var result = $('"' + response + '"'),
-				    newBlocks = $(result).find(blockSelector);
+				var result = $(response),
+					newBlocks = $(result).find(blockSelector);
 
 				if (add) {
 					window.history.pushState(
