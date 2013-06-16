@@ -90,7 +90,7 @@ the page. The following example fades out the old content, and fades in the new 
             var $oldEl = this;      // reference to the DOM element that is about to be replaced
             $newEl.hide();    // hide the new content before it comes in
 
-            $eldEl.fadeOut("fast", function() {
+            $oldEl.fadeOut("fast", function() {
                 $oldEl.replaceWith($content);
                 $newEl.show();
                 $newEl.fadeIn("fast");
