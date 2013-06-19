@@ -219,7 +219,7 @@
 		// Only add a class to internal links
 		$(this).find('a').filter(function () {
 		        return this.hostname === location.hostname;
-		}).addClass('dJAX_internal')
+		}).addClass('dJAX_internal');
 
 
 		// attachClick to links with '.dJAX_internal'. Includes links loaded via ajax.
