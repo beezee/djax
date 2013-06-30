@@ -140,17 +140,17 @@
                 //Remove element not done by other removes
                 $('.datepicker').remove();
                 
-                var newStyle = $(result).filter('#djax-inline-css').text();
-                if($('#djax-inline-css').length)
+                var newStyle = $(result).filter('style'+blockSelector).text();
+                if($('style'+blockSelector).length)
                 {
-                    $('#djax-inline-css').remove();
+                    $('style'+blockSelector).remove();
                 }
                 //console.log("error",newStyle);
                 
                 var head = document.getElementsByTagName('head')[0],
                 style = document.createElement('style');
                 style.type = 'text/css';
-                style.id = "djax-inline-css";
+                style.className =  blockSelector.replace('.', '');
                 if (style.styleSheet){
                     style.styleSheet.cssText = newStyle;
                 } else {
@@ -217,16 +217,15 @@
 
                 });
                                 
-                //Get inline JS Div and remove all exisitng scripts
-                var myJSNode = document.getElementById("djax-inline-js");
-                while (myJSNode.firstChild) {
-                    myJSNode.removeChild(myJSNode.firstChild);
-                }
+                //Get old scripts and remove them from the dom (tidiness more than anything)
+                var oldScripts = $('script'+blockSelector);
+                $.each(oldScripts, function () {
+                    $(this).remove();
+                });
                 
                 //Get all scripts to add to the new page
                 var newScripts = $(result).filter('script'+blockSelector);
                 $.each(newScripts, function () {
-                    var myJSNode = document.getElementById("djax-inline-js");
                     var newScript = $(this).text();
                     
                     //console.log('error', newScript); //Debugging yo
@@ -234,7 +233,8 @@
                     var script = document.createElement("script");
                     script.type  = "text/javascript";
                     script.text  = newScript;               // use this for inline script
-                    myJSNode.appendChild(script);
+                    script.className =  blockSelector.replace('.', '');
+                    document.body.appendChild(script);
                 });
 
 
