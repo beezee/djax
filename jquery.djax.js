@@ -134,7 +134,10 @@
 				}
 
 				// Set page title as new page title
-				$('title').text($(result).filter('title').text());
+				// Set title cross-browser:
+				// - $('title').text(title_text); returns an error on IE7
+				//
+				document.title = $(result).filter('title').text();
 
 				// Loop through each block and find new page equivalent
 				blocks.each(function () {
