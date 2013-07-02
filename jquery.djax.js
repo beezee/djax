@@ -220,12 +220,17 @@
 					}]
 				);
 			};
-			$.get(url, function (response) {
-				replaceBlocks(response);
-			}).error(function (response) {
-				// handle error
-				console.log('error', response);
-				replaceBlocks(response['responseText']);
+
+			$.ajax({
+				'url' : url,
+				'success' : function (response) {
+					replaceBlocks(response);
+				},
+				'error' : function (response, textStatus, errorThrown) {
+					// handle error
+					console.log('error', response, textStatus, errorThrown);
+					replaceBlocks(response['responseText']);
+				}
 			});
 		}; /* End self.navigate */
 
