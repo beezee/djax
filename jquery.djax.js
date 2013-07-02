@@ -36,6 +36,38 @@
 	'use strict';
     
     var _methods = {
+        'navigate' : function (url, add_to_history) {
+            var $this = this;
+
+            var blockSelector = $this.data('djaxBlockSelector');
+			var blocks = $(blockSelector);
+
+			$this.djaxing = true;
+
+			// Get the new page
+			$(window).trigger(
+				'djaxLoading', [{
+					'url' : url
+				}]
+			);
+            
+			$.ajax({
+				'url' : url,
+				'success' : function (response) {
+					_methods.replaceBlocks.call($this, url, add_to_history, blocks, response);
+				},
+				'error' : function (response, textStatus, errorThrown) {
+					// handle error
+					// console.log('error', response, textStatus, errorThrown);
+
+                    // still replace blocks as we may end up here if the
+                    // correct content type is not set by the webserver -
+                    // (e.g., with content type set to application/json an
+                    // error may be returned)
+                    _methods.replaceBlocks.call($this, url, add_to_history, blocks, response['responseText']);
+				}
+			});
+		},
         'attachClick' : function (element, event) {
             var $this = this;
 
@@ -70,7 +102,7 @@
 			$(window).trigger('djaxClick', [element]);
 			$this.reqUrl = link.attr('href');
 			$this.triggered = false;
-			methods.navigate.call($this, link.attr('href'), true);
+			_methods.navigate.call($this, link.attr('href'), true);
 		},
         'replaceBlocks' : function (url, add, blocks, response) {
             var $this = this;
@@ -79,7 +111,7 @@
             var replaceBlockWithFunc = $this.data('djaxReplaceBlockWith');
 
             if (url !== $this.reqUrl) {
-                methods.navigate.call($this, $this.reqUrl, false);
+                _methods.navigate.call($this, $this.reqUrl, false);
                 return true;
             }
 
@@ -256,44 +288,16 @@
                     $this.triggered = false;
                     if (event.originalEvent.state) {
                         $this.reqUrl = event.originalEvent.state.url;
-                        methods.navigate.call($this, event.originalEvent.state.url, false);
+                        _methods.navigate.call($this, event.originalEvent.state.url, false);
                     }
                 });
             });
         },
         'navigate' : function (url, add_to_history) {
             var $this = this;
-
-            var blockSelector = $this.data('djaxBlockSelector');
-			var blocks = $(blockSelector);
-
-			$this.djaxing = true;
-
-			// Get the new page
-			$(window).trigger(
-				'djaxLoading',
-				[{
-					'url' : url
-				}]
-			);
-            
-			$.ajax({
-				'url' : url,
-				'success' : function (response) {
-					_methods.replaceBlocks.call($this, url, add_to_history, blocks, response);
-				},
-				'error' : function (response, textStatus, errorThrown) {
-					// handle error
-					// console.log('error', response, textStatus, errorThrown);
-
-                    // still replace blocks as we may end up here if the
-                    // correct content type is not set by the webserver -
-                    // (e.g., with content type set to application/json an
-                    // error may be returned)
-                    _methods.replaceBlocks.call($this, url, add_to_history, blocks, response['responseText']);
-				}
-			});
-		} /* End self.navigate */
+            $this.reqUrl = url;
+            _methods.navigate.call($this, url, add_to_history);
+        }
     };
     
     $.fn.djax = function(method) {
