@@ -261,7 +261,7 @@
                 });
             });
         },
-        'navigate' : function (url, add) {
+        'navigate' : function (url, add_to_history) {
             var $this = this;
 
             var blockSelector = $this.data('djaxBlockSelector');
@@ -280,7 +280,7 @@
 			$.ajax({
 				'url' : url,
 				'success' : function (response) {
-					_methods.replaceBlocks.call($this, url, add, blocks, response);
+					_methods.replaceBlocks.call($this, url, add_to_history, blocks, response);
 				},
 				'error' : function (response, textStatus, errorThrown) {
 					// handle error
@@ -290,7 +290,7 @@
                     // correct content type is not set by the webserver -
                     // (e.g., with content type set to application/json an
                     // error may be returned)
-                    _methods.replaceBlocks.call($this, url, add, blocks, response['responseText']);
+                    _methods.replaceBlocks.call($this, url, add_to_history, blocks, response['responseText']);
 				}
 			});
 		} /* End self.navigate */
