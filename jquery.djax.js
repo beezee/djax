@@ -147,7 +147,7 @@
 					
 					$('a', newBlock).filter(function () {
 						return this.hostname === location.hostname;
-					}).addClass('dJAX_internal').on('click', function (event) {
+					}).addClass('dJAX_internal').on('click.djax', function (event) {
 						return self.attachClick(this, event);
 					});
 					
@@ -198,7 +198,7 @@
 					// Only add a class to internal links
 					$('a', newBlock).filter(function () {
 						return this.hostname === location.hostname;
-					}).addClass('dJAX_internal').on('click', function (event) {
+					}).addClass('dJAX_internal').on('click.djax', function (event) {
 						return self.attachClick(this, event);
 					});
 
@@ -247,7 +247,7 @@
 		// Only add a class to internal links
 		$(this).find('a').filter(function () {
 			return this.hostname === location.hostname;
-		}).addClass('dJAX_internal').on('click', function (event) {
+		}).addClass('dJAX_internal').on('click.djax', function (event) {
 			return self.attachClick(this, event);
 		});
 
