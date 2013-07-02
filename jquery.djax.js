@@ -64,7 +64,6 @@
 
 		// Exclude the link exceptions
 		self.attachClick = function (element, event) {
-
 			var link = $(element),
 				exception = false;
 
@@ -163,6 +162,8 @@
 				});
 
 				// Loop through new page blocks and add in as needed
+				var $previousBlock;
+
 				$.each(newBlocks, function () {
 
 					var newBlock = $(this),
@@ -181,11 +182,20 @@
 							newBlock.insertAfter('#' + $previousSibling.attr('id'));
 						} else {
 							// There's no previous sibling, so prepend to parent instead
-							newBlock.prependTo('#' + newBlock.parent().attr('id'));
+							var parent_id = newBlock.parent().attr('id');
+							if (parent_id === undefined && $previousBlock !== undefined) {
+								newBlock.insertAfter('#' + $previousBlock.attr('id'));
+							}
+							else {
+								newBlock.prependTo('#' + parent_id);
+							}
 						}
 					}
 
-									// Only add a class to internal links
+					// Keep the previous block
+					$previousBlock = newBlock;
+
+					// Only add a class to internal links
 					$('a', newBlock).filter(function () {
 						return this.hostname === location.hostname;
 					}).addClass('dJAX_internal').on('click', function (event) {
@@ -251,5 +261,4 @@
 		});
 
 	};
-
 }(jQuery, window));
