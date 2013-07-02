@@ -209,6 +209,16 @@
 					self.triggered = true;
 					self.djaxing = false;
 				}
+
+				// Trigger a djaxLoaded event when done
+				$(window).trigger(
+					'djaxLoaded',
+					[{
+						'url' : url,
+						'title' : $(result).filter('title').text(),
+						'response' : response
+					}]
+				);
 			};
 			$.get(url, function (response) {
 				replaceBlocks(response);
