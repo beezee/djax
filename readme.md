@@ -13,7 +13,10 @@ Then instantiate on the largest page element where you will have updating conten
 
     <script type="text/javascript">
         jQuery(document).ready(function($) {
-            $('body').djax('.updatable', ['array', 'of', 'url', 'fragments', 'to', 'exclude']);
+            $('body').djax({
+                'selector' : '.updatable', 
+                'exceptions' : ['array', 'of', 'url', 'fragments', 'to', 'exclude']
+            });
         });
     </script>
     
@@ -21,7 +24,7 @@ Congrats, you're done! Well mostly...
 
 ##Markup
 
-djax will track elements with the class you pass it as a first argument. In the above example I've passed the class 'updatable,' so my markup would look something like this:
+djax will track elements with the class you pass it as the 'selector' argument. In the above example I've passed the class 'updatable,' so my markup would look something like this:
 
     <body>
         <div class="wrapper" id="main">
@@ -55,28 +58,33 @@ the parent element (by ID.)
 
 ##Parameters
 
-The plugin accepts only two parameters, and only one is required.
+The plugin accepts only two parameters: 'selector' and 'exceptions'. Only 'selector' is required.
 
 ###Tracking Class
 
-The first and only required parameter is the class you will use to identify trackable elements. If my code looks like the below sample, every dynamic element in my markup should have a class
+The 'selector' parameter is the only required parameter and is the class you will use to identify trackable elements. If my code looks like the below sample, every dynamic element in my markup should have a class
 of djaxable
 
     <script type="text/javascript">
         jQuery(document).ready(function($) {
-            $('body').djax('.djaxable');
+            $('body').djax(
+                'selector' : '.djaxable'
+            );
         });
     </script>
     
 ###Exceptions
 
-By default djax works on any internal links, but sometimes you may want to exclude certain URLs on your site. The second parameter allows you to pass an array of URL fragments to exclude from djax
+By default djax works on any internal links, but sometimes you may want to exclude certain URLs on your site. The 'exceptions' parameter allows you to pass an array of URL fragments to exclude from djax
 loading. This is performed with a simple Javascript 'indexOf,' so the more of the URL you provide, the more specifically your exclusions will be matched. The below example will djax any internal links
 that do not contain admin, resources, or ?s= in the url.
 
     <script type="text/javascript">
         jQuery(document).ready(function($) {
-            $('body').djax('.djaxable', ['admin', 'resources', '?s=']);
+            $('body').djax(
+                'selector' : '.djaxable', 
+                'exceptions' : ['admin', 'resources', '?s=']
+            );
         });
     </script>
 
@@ -97,7 +105,11 @@ the page. The following example fades out the old content, and fades in the new 
             });
         }
         jQuery(document).ready(function($) {
-            $('body').djax('.djaxable', [], transition);
+            $('body').djax(
+                'selector' : '.djaxable', 
+                'exceptions' : [], 
+                'replaceBlockFunction' : transition
+            );
         });
     </script>
 
