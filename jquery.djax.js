@@ -34,15 +34,22 @@
 
 (function ($, exports) {
 	'use strict';
+
+    var djaxing = false;
+    var reqUrl;
+    var triggered;
     
     var _methods = {
+        'clearDjaxing' : function () {
+            djaxing = false;
+        },
         'navigate' : function (url, add_to_history) {
             var $this = this;
 
             var blockSelector = $this.data('djaxBlockSelector');
 			var blocks = $(blockSelector);
 
-			$this.djaxing = true;
+			djaxing = true;
 
 			// Get the new page
 			$(window).trigger(
@@ -94,14 +101,14 @@
 			event.preventDefault();
 
 			// If we're already doing djaxing, return now and silently fail
-			if ($this.djaxing) {
-				setTimeout($this.clearDjaxing, 1000);
+			if (djaxing) {
+				setTimeout(_methods.clearDjaxing, 1000);
 				return $(element);
 			}
 
 			$(window).trigger('djaxClick', [element]);
-			$this.reqUrl = link.attr('href');
-			$this.triggered = false;
+			reqUrl = link.attr('href');
+			triggered = false;
 			_methods.navigate.call($this, link.attr('href'), true);
 		},
         'replaceBlocks' : function (url, add, blocks, response) {
@@ -110,8 +117,8 @@
             var blockSelector = $this.data('djaxBlockSelector');
             var replaceBlockWithFunc = $this.data('djaxReplaceBlockWith');
 
-            if (url !== $this.reqUrl) {
-                _methods.navigate.call($this, $this.reqUrl, false);
+            if (url !== reqUrl) {
+                _methods.navigate.call($this, reqUrl, false);
                 return true;
             }
 
@@ -204,7 +211,7 @@
 
 
             // Trigger djaxLoad event as a pseudo ready()
-            if (!$this.triggered) {
+            if (!triggered) {
                 $(window).trigger(
                     'djaxLoad',
                     [{
@@ -213,8 +220,8 @@
                         'response' : response
                     }]
                 );
-                $this.triggered = true;
-                $this.djaxing = false;
+                triggered = true;
+                djaxing = false;
             }
 
             // Trigger a djaxLoaded event when done
@@ -247,8 +254,9 @@
                 }
 
                 var excludes = settings.exceptions,
-                    replaceBlockWith = (settings.replaceBlockFunction) ? settings.replaceBlockFunction: $.fn.replaceWith,
-                    djaxing = false;
+                    replaceBlockWith = (settings.replaceBlockFunction) ? settings.replaceBlockFunction: $.fn.replaceWith;
+
+                djaxing = false;
 
                 var blockSelector = settings.selector;
 
@@ -271,10 +279,6 @@
                     window.location.href
                 );
                 
-                $this.clearDjaxing = function() {
-                    $this.djaxing = false;
-                }
-
                 // Exclude the link exceptions
                 // Only add a class to internal links
                 $this.find('a').filter(function () {
@@ -285,9 +289,9 @@
 
                 // On new page load
                 $(window).bind('popstate', function (event) {
-                    $this.triggered = false;
+                    triggered = false;
                     if (event.originalEvent.state) {
-                        $this.reqUrl = event.originalEvent.state.url;
+                        reqUrl = event.originalEvent.state.url;
                         _methods.navigate.call($this, event.originalEvent.state.url, false);
                     }
                 });
@@ -295,7 +299,10 @@
         },
         'navigate' : function (url, add_to_history) {
             var $this = this;
-            $this.reqUrl = url;
+
+            triggered = false;
+			$(window).trigger('djaxClick', []);
+            reqUrl = url;
             _methods.navigate.call($this, url, add_to_history);
         }
     };
