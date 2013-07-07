@@ -67,9 +67,9 @@ of djaxable
 
     <script type="text/javascript">
         jQuery(document).ready(function($) {
-            $('body').djax(
+            $('body').djax({
                 'selector' : '.djaxable'
-            );
+            });
         });
     </script>
     
@@ -81,10 +81,10 @@ that do not contain admin, resources, or ?s= in the url.
 
     <script type="text/javascript">
         jQuery(document).ready(function($) {
-            $('body').djax(
+            $('body').djax({
                 'selector' : '.djaxable', 
                 'exceptions' : ['admin', 'resources', '?s=']
-            );
+            });
         });
     </script>
 
@@ -105,11 +105,11 @@ the page. The following example fades out the old content, and fades in the new 
             });
         }
         jQuery(document).ready(function($) {
-            $('body').djax(
+            $('body').djax({
                 'selector' : '.djaxable', 
                 'exceptions' : [], 
                 'replaceBlockFunction' : transition
-            );
+            });
         });
     </script>
 
