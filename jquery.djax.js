@@ -145,19 +145,24 @@
                 {
                     $('style'+blockSelector).remove();
                 }
-                //console.log("error",newStyle);
-                
-                var head = document.getElementsByTagName('head')[0],
-                style = document.createElement('style');
-                style.type = 'text/css';
-                style.className =  blockSelector.replace('.', '');
-                if (style.styleSheet){
-                    style.styleSheet.cssText = newStyle;
-                } else {
-                    style.appendChild(document.createTextNode(newStyle));
-                }
+                                               
+                //Get all styles to add to the new page
+                var head = document.getElementsByTagName('head')[0];
+                var newStyles = $(result).filter('style'+blockSelector);
+                $.each(newStyles, function () {
+                    var newStyle = $(this).text();
+                    var style = document.createElement('style');
 
-                head.appendChild(style);    
+                    style.type = 'text/css';
+                    style.className =  blockSelector.replace('.', '');
+                    if (style.styleSheet){
+                        style.styleSheet.cssText = newStyle;
+                    } else {
+                        style.appendChild(document.createTextNode(newStyle));
+                    }
+
+                    head.appendChild(style);  
+                });
                 
 
                 // Loop through each block and find new page equivalent
