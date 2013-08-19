@@ -73,21 +73,38 @@
 					'url' : url
 				}]
 			);
+
+            var settings = $this.data('settings');
             
 			$.ajax({
 				'url' : url,
-				'success' : function (response) {
-					_methods.replaceBlocks.call($this, url, add_to_history, blocks, response);
+                'data' : settings.ajax_data_parameter,
+                'crossDomain' : true,
+				'success' : function (responseData, textStatus, jqXHR) {
+                    // use the url shown indicated in the response if possible
+                    var target_url = jqXHR.getResponseHeader("TargetUrl");
+                    if (typeof target_url === 'undefined') {
+                        target_url = url;
+                    }
+                    else {
+                        // trust the header
+                        reqUrl = target_url;
+                    }
+					_methods.replaceBlocks.call($this, target_url, add_to_history, blocks, responseData);
 				},
-				'error' : function (response, textStatus, errorThrown) {
-					// handle error
-					// console.log('error', response, textStatus, errorThrown);
-
-                    // still replace blocks as we may end up here if the
-                    // correct content type is not set by the webserver -
-                    // (e.g., with content type set to application/json an
-                    // error may be returned)
-                    _methods.replaceBlocks.call($this, url, add_to_history, blocks, response['responseText']);
+				'error' : function (jqXHR, textStatus, errorThrown) {
+                    if (errorThrown === "" && textStatus === "error") {
+                        // just "browse" to the url provided to handle redirects
+                        window.location.href = this.url;
+                    }
+                    else {
+                        // handle error
+                        // still replace blocks as we may end up here if the
+                        // correct content type is not set by the webserver -
+                        // (e.g., with content type set to application/json an
+                        // error may be returned)
+                        _methods.replaceBlocks.call($this, url, add_to_history, blocks, jqXHR['responseText']);
+                    }
 				}
 			});
 		},
