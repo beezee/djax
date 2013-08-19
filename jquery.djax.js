@@ -35,13 +35,27 @@
 (function ($, exports) {
 	'use strict';
 
+    var url_queue = [];
     var djaxing = false;
     var reqUrl;
     var triggered;
     
     var _methods = {
         'clearDjaxing' : function () {
+            var $this = this;
             djaxing = false;
+
+            // check in the queue to see if there is something else that
+            // needs to be navigated
+            if (url_queue.length) {
+                var url_addToHist = url_queue.pop();
+                url_queue = [];
+
+
+                var url = url_addToHist[0],
+                    addToHistory = url_addToHist[1];
+                methods.navigate.call($this, url, addToHistory);
+            }
         },
         'navigate' : function (url, add_to_history) {
             var $this = this;
@@ -297,13 +311,31 @@
                 });
             });
         },
-        'navigate' : function (url, add_to_history) {
+        'is_djaxing' : function () {
+            return djaxing;
+        },
+        'navigate' : function (url, add_to_history, data) {
             var $this = this;
 
-            triggered = false;
-			$(window).trigger('djaxClick', []);
-            reqUrl = url;
-            _methods.navigate.call($this, url, add_to_history);
+            if (typeof data === 'undefined') {
+                data = [];
+            }
+            
+            if (djaxing) {
+               // push url in the queue and handle once the previous ajax
+               // request has completed
+               url_queue.push([url, add_to_history]); 
+
+               // handle queue
+			   setTimeout(function () { _methods.clearDjaxing.call($this)} , 1000);
+               return $this;
+            }
+            else {
+                triggered = false;
+                $(window).trigger('djaxClick', data);
+                reqUrl = url;
+                _methods.navigate.call($this, url, add_to_history);
+            }
         }
     };
     
