@@ -35,6 +35,8 @@
 (function ($, exports) {
 	'use strict';
 
+    $.support.cors = true;
+
     var url_queue = [];
     var djaxing = false;
     var reqUrl;
