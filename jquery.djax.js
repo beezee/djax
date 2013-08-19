@@ -298,6 +298,7 @@
                 'selector' : undefined,
                 'exceptions' : [],
                 'replaceBlockFunction' : undefined,
+                'ajax_data_parameter' : { }
             }, options);
             
             return this.each(function() {
