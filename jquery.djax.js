@@ -135,7 +135,7 @@
 
 			// If we're already doing djaxing, return now and silently fail
 			if (djaxing) {
-				setTimeout(_methods.clearDjaxing, 1000);
+				setTimeout(function() { _methods.clearDjaxing.call($this); }, 1000);
 				return $(element);
 			}
 
@@ -144,66 +144,88 @@
 			triggered = false;
 			_methods.navigate.call($this, link.attr('href'), true);
 		},
-        'replaceBlocks' : function (url, add, blocks, response) {
+        'replaceBlocks' : function (url, add, currentBlocks, response) {
             var $this = this;
-
-            var blockSelector = $this.data('djaxBlockSelector');
-            var replaceBlockWithFunc = $this.data('djaxReplaceBlockWith');
 
             if (url !== reqUrl) {
                 _methods.navigate.call($this, reqUrl, false);
                 return true;
             }
 
-            var result = $(response),
-                newBlocks = $(result).find(blockSelector);
+            // get some settings
+            var blockSelector = $this.data('djaxBlockSelector');
+            var replaceBlockWithFunc = $this.data('djaxReplaceBlockWith');
 
+            var $result = $(response);
+
+            // add them to the history if requested
             if (add) {
                 window.history.pushState(
                     {
                         'url' : url,
-                        'title' : $(result).filter('title').text()
+                        'title' : $result.filter('title').text()
                     },
-                    $(result).filter('title').text(),
+                    $result.filter('title').text(),
                     url
                 );
             }
 
             // Set page title as new page title
+            //
             // Set title cross-browser:
             // - $('title').text(title_text); returns an error on IE7
             //
-            document.title = $(result).filter('title').text();
+            document.title = $result.filter('title').text();
+
+            // parse new blocks
+            var $newBlocks = $(response).find(blockSelector);
 
             // Loop through each block and find new page equivalent
-            blocks.each(function () {
+            currentBlocks.each(function () {
 
-                var id = '#' + $(this).attr('id'),
-                    newBlock = newBlocks.filter(id),
-                    block = $(this);
+                var $currentBlock = $(this);
+                var id = '#' + $currentBlock.attr('id');
+                var newBlock = $newBlocks.filter(id);
                 
+                // take all internal links in the new block
                 $('a', newBlock).filter(function () {
                     return this.hostname === location.hostname;
-                }).addClass('dJAX_internal').on('click.djax', function (event) {
-                    _methods.attachClick.call($this, this, event);
-                });
+                })
+                    // add the dJAX_internal class to them
+                    .addClass('dJAX_internal')
+                    
+                    // attach the click event
+                    .on('click.djax', function (event) {
+                        _methods.attachClick.call($this, this, event);
+                    });
                 
                 if (newBlock.length) {
-                    if (block.html() !== newBlock.html()) {
-                        replaceBlockWithFunc.call(block, newBlock);
-                    }
-                } else {
-                    block.remove();
-                }
+                    // compare the html of the new and the current block
+                    var block_html = $currentBlock.clone().wrap('<div>').parent().html(),
+                        newblock_html = newBlock.clone().wrap('<div>').parent().html();
 
+                    if (block_html !== newblock_html) {
+                        // perform replacement
+                        var detatched = replaceBlockWithFunc.call($currentBlock, newBlock);
+
+                        // get rid of detatched DOM elements
+                        $(detatched).remove();
+                    }
+                    else {
+                        // get rid of the new block if the html of the old
+                        // block is exactly the same!
+                        $(newBlock).remove();
+                    }
+                } 
             });
+
 
             // Loop through new page blocks and add in as needed
             var $previousBlock;
 
-            $.each(newBlocks, function () {
+            $.each($newBlocks, function () {
 
-                var newBlock = $(this),
+                var $newBlock = $(this),
                     id = '#' + $(this).attr('id'),
                     $previousSibling;
 
@@ -212,28 +234,28 @@
                 if (!$(id).length) {
 
                     // Find the previous sibling
-                    $previousSibling = $(result).find(id).prev();
+                    $previousSibling = $result.find(id).prev();
 
                     if ($previousSibling.length) {
                         // Insert after the previous element
-                        newBlock.insertAfter('#' + $previousSibling.attr('id'));
+                        $newBlock.insertAfter('#' + $previousSibling.attr('id'));
                     } else {
                         // There's no previous sibling, so prepend to parent instead
-                        var parent_id = newBlock.parent().attr('id');
+                        var parent_id = $newBlock.parent().attr('id');
                         if (parent_id === undefined && $previousBlock !== undefined) {
-                            newBlock.insertAfter('#' + $previousBlock.attr('id'));
+                            $newBlock.insertAfter('#' + $previousBlock.attr('id'));
                         }
                         else {
-                            newBlock.prependTo('#' + parent_id);
+                            $newBlock.prependTo('#' + parent_id);
                         }
                     }
                 }
 
                 // Keep the previous block
-                $previousBlock = newBlock;
+                $previousBlock = $newBlock;
 
                 // Only add a class to internal links
-                $('a', newBlock).filter(function () {
+                $('a', $newBlock).filter(function () {
                     return this.hostname === location.hostname;
                 }).addClass('dJAX_internal').on('click.djax', function (event) {
                     return _methods.attachClick.call($this, this, event);
@@ -249,7 +271,7 @@
                     'djaxLoad',
                     [{
                         'url' : url,
-                        'title' : $(result).filter('title').text(),
+                        'title' : $result.filter('title').text(),
                         'response' : response
                     }]
                 );
@@ -262,7 +284,7 @@
                 'djaxLoaded',
                 [{
                     'url' : url,
-                    'title' : $(result).filter('title').text(),
+                    'title' : $result.filter('title').text(),
                     'response' : response
                 }]
             );
@@ -275,11 +297,14 @@
             var settings = $.extend({
                 'selector' : undefined,
                 'exceptions' : [],
-                'replaceBlockFunction' : undefined
+                'replaceBlockFunction' : undefined,
             }, options);
             
             return this.each(function() {
                 var $this = $(this);
+
+                // save settings
+                $this.data('settings', settings);
 
                 // If browser doesn't support pushState, abort now
                 if (!history.pushState) {
@@ -301,7 +326,7 @@
 
                 // Save excludes so that we can use them later...
                 $this.data('djaxUserExcludes', excludes);
-
+            
                 // Ensure that the history is correct when going from 2nd page to 1st
                 window.history.replaceState(
                     {
