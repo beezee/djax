@@ -75,10 +75,15 @@
 			);
 
             var settings = $this.data('settings');
-            
+
+            var ajax_data = settings.ajax_data_parameter;
+            if (typeof ajax_data === 'function') {
+                ajax_data = ajax_data();
+            }
+
 			$.ajax({
 				'url' : url,
-                'data' : settings.ajax_data_parameter,
+                'data' : ajax_data,
                 'crossDomain' : true,
 				'success' : function (responseData, textStatus, jqXHR) {
                     // use the url shown indicated in the response if possible
@@ -139,7 +144,14 @@
 				return $(element);
 			}
 
-			$(window).trigger('djaxClick', [element]);
+            // trigger asynchronous click event
+            var djaxClickData = [element];
+			$(window).trigger('djaxClick', djaxClickData);
+
+            // call blocking callback
+            var settings = $this.data('settings');
+            settings.onDjaxClickCallback.call($this, djaxClickData);
+            
 			reqUrl = link.attr('href');
 			triggered = false;
 			_methods.navigate.call($this, link.attr('href'), true);
@@ -298,7 +310,8 @@
                 'selector' : undefined,
                 'exceptions' : [],
                 'replaceBlockFunction' : undefined,
-                'ajax_data_parameter' : { }
+                'ajax_data_parameter' : { },
+                'onDjaxClickCallback' : function (djaxClickData) { return; }
             }, options);
             
             return this.each(function() {
@@ -378,9 +391,25 @@
             else {
                 triggered = false;
                 $(window).trigger('djaxClick', data);
+
+                // call blocking callback
+                var settings = $this.data('settings');
+                settings.onDjaxClickCallback.call($this, data);
+
                 reqUrl = url;
                 _methods.navigate.call($this, url, add_to_history);
             }
+        },
+        'set_ajax_data_parameter' : function (ajax_parameters_func_or_obj) {
+            var $this = this;
+            var settings = $this.data('settings');
+            
+            // if function: will be called when needed; if object: will be
+            // passed straight away to the $.ajax call.
+            settings.ajax_data_parameter = ajax_parameters_func_or_obj;
+
+            // save parameters
+            $this.data('settings', settings);
         }
     };
     
