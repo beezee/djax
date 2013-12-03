@@ -21,10 +21,6 @@
 *
 */
 
-/*jslint browser: true, indent: 4, maxerr: 50, sub: true */
-/*jshint bitwise:true, curly:true, eqeqeq:true, forin:true, immed:true, latedef:true, noarg:true, noempty:true, nomen:true, nonew:true, onevar:true, plusplus:true, regexp:true, smarttabs:true, strict:true, trailing:true, undef:true, white:true, browser:true, jquery:true, indent:4, maxerr:50, */
-/*global jQuery */
-
 // ==ClosureCompiler==
 // @compilation_level ADVANCED_OPTIMIZATIONS
 // @output_file_name jquery.djax.js
@@ -41,6 +37,7 @@
     var djaxing = false;
     var reqUrl;
     var triggered;
+    var popstateUrl = '';
     
     var _methods = {
         'clearDjaxing' : function () {
@@ -55,8 +52,9 @@
 
 
                 var url = url_addToHist[0],
-                    addToHistory = url_addToHist[1];
-                methods.navigate.call($this, url, addToHistory);
+                    addToHistory = url_addToHist[1],
+                    urlData = url_addToHist[2];
+                methods.navigate.call($this, url, addToHistory, urlData);
             }
         },
         'navigate' : function (url, add_to_history) {
@@ -98,7 +96,11 @@
 					_methods.replaceBlocks.call($this, target_url, add_to_history, blocks, responseData);
 				},
 				'error' : function (jqXHR, textStatus, errorThrown) {
-                    if (errorThrown === "" && textStatus === "error") {
+                    if (textStatus === 'error' 
+                        && (jqXHR.status === 404 || 
+                            errorThrown === "" || 
+                            typeof jqXHR.responseText === 'undefined')) {
+
                         // just "browse" to the url provided to handle redirects
                         window.location.href = this.url;
                     }
@@ -151,13 +153,23 @@
             // call blocking callback
             var settings = $this.data('settings');
             settings.onDjaxClickCallback.call($this, djaxClickData);
-            
-			reqUrl = link.attr('href');
+
+            var urlDataAttribute = settings.urlDataAttribute;
+            if (typeof urlDataAttribute !== 'undefined') {
+                reqUrl = link.data(urlDataAttribute);
+            }
+
+            if (typeof reqUrl === 'undefined') {
+                reqUrl = link.attr('href');
+            }
+
 			triggered = false;
 			_methods.navigate.call($this, link.attr('href'), true);
 		},
         'replaceBlocks' : function (url, add, currentBlocks, response) {
             var $this = this;
+
+            var settings = $this.data('settings');
 
             if (url !== reqUrl) {
                 _methods.navigate.call($this, reqUrl, false);
@@ -182,6 +194,16 @@
                 );
             }
 
+            // here store all replacements to be performed
+            // they look like:
+            // {
+            //     type: 'replace', // or prependTo, insertAfter, remove
+            //     new_block: $jquery_element,
+            //     target: $jquery_element, // or null if a new block needs to be removed
+            // }
+            //
+            var replacements_config = [];
+
             // Set page title as new page title
             //
             // Set title cross-browser:
@@ -192,7 +214,9 @@
             // parse new blocks
             var $newBlocks = $(response).find(blockSelector);
 
-            // Loop through each block and find new page equivalent
+            //
+            // Case in which blocks need to be replaced
+            //
             currentBlocks.each(function () {
 
                 var $currentBlock = $(this);
@@ -200,16 +224,16 @@
                 var newBlock = $newBlocks.filter(id);
                 
                 // take all internal links in the new block
-                $('a', newBlock).filter(function () {
+                $('a:not(.' + settings.ignoreClass + ')', newBlock).filter(function () {
                     return this.hostname === location.hostname;
                 })
-                    // add the dJAX_internal class to them
-                    .addClass('dJAX_internal')
-                    
-                    // attach the click event
-                    .on('click.djax', function (event) {
-                        _methods.attachClick.call($this, this, event);
-                    });
+                // add the dJAX_internal class to them
+                .addClass('dJAX_internal')
+                
+                // attach the click event
+                .on('click.djax', function (event) {
+                    _methods.attachClick.call($this, this, event);
+                });
                 
                 if (newBlock.length) {
                     // compare the html of the new and the current block
@@ -217,22 +241,28 @@
                         newblock_html = newBlock.clone().wrap('<div>').parent().html();
 
                     if (block_html !== newblock_html) {
-                        // perform replacement
-                        var detatched = replaceBlockWithFunc.call($currentBlock, newBlock);
-
-                        // get rid of detatched DOM elements
-                        $(detatched).remove();
+                        replacements_config.push({
+                            'type':  'replace',
+                            'new_block' : newBlock,
+                            'target' : $currentBlock
+                        });
                     }
                     else {
                         // get rid of the new block if the html of the old
                         // block is exactly the same!
-                        $(newBlock).remove();
+                        replacements_config.push({
+                            'type': 'remove',
+                            'new_block': newBlock,
+                            'target' : undefined
+                        });
                     }
                 } 
             });
 
 
-            // Loop through new page blocks and add in as needed
+            // 
+            // Case in which blocks need to be added/appended
+            //
             var $previousBlock;
 
             $.each($newBlocks, function () {
@@ -250,55 +280,85 @@
 
                     if ($previousSibling.length) {
                         // Insert after the previous element
-                        $newBlock.insertAfter('#' + $previousSibling.attr('id'));
+                        replacements_config.push({
+                            'type' : 'insertAfter',
+                            'target' : $('#' + $previousSibling.attr('id')),
+                            'new_block' : $newBlock
+                        });
                     } else {
                         // There's no previous sibling, so prepend to parent instead
                         var parent_id = $newBlock.parent().attr('id');
                         if (parent_id === undefined && $previousBlock !== undefined) {
-                            $newBlock.insertAfter('#' + $previousBlock.attr('id'));
+                            replacements_config.push({
+                                'type' : 'insertAfter',
+                                'target' : $('#' + $previousBlock.attr('id')),
+                                'new_block' : $newBlock
+                            });
                         }
                         else {
-                            $newBlock.prependTo('#' + parent_id);
+                            replacements_config.push({
+                                'type' : 'prependTo',
+                                'target' : $('#' + parent_id),
+                                'new_block' : $newBlock
+                            });
                         }
                     }
                 }
 
                 // Keep the previous block
                 $previousBlock = $newBlock;
-
+                
                 // Only add a class to internal links
-                $('a', $newBlock).filter(function () {
-                    return this.hostname === location.hostname;
-                }).addClass('dJAX_internal').on('click.djax', function (event) {
-                    return _methods.attachClick.call($this, this, event);
+                // TODO: Remove this
+                // $('a:not(.' + settings.ignoreClass + ')', $newBlock).filter(function () {
+                //     return this.hostname === location.hostname;
+                // }).addClass('dJAX_internal').on('click.djax', function (event) {
+                //     return _methods.attachClick.call($this, this, event);
+                // });
+
+                var replace_fn = function ($newBlock) {
+                    $('a:not(.' + settings.ignoreClass + ')', $newBlock).filter(function () {
+                        return this.hostname === location.hostname;
+                    }).addClass('dJAX_internal').on('click.djax', function (event) {
+                        return _methods.attachClick.call($this, this, event);
+                    });
+                }
+
+                replacements_config.push({
+                    'type' : 'function',
+                    'target': replace_fn,
+                    'args' : [$newBlock]
                 });
 
             });
 
+            // Delegate block replacement
 
-
-            // Trigger djaxLoad event as a pseudo ready()
-            if (!triggered) {
-                $(window).trigger(
-                    'djaxLoad',
-                    [{
-                        'url' : url,
-                        'title' : $result.filter('title').text(),
-                        'response' : response
-                    }]
-                );
-                triggered = true;
-                djaxing = false;
+            var done_fn = function () {
+                // Trigger djaxLoad event as a pseudo ready()
+                if (!triggered) {
+                    $(window).trigger(
+                        'djaxLoad',
+                        [{
+                            'url' : url,
+                            'title' : $result.filter('title').text(),
+                            'response' : response
+                        }]
+                    );
+                    triggered = true;
+                    djaxing = false;
+                }
             }
+            
+            replacements_config.push({
+                'type' : 'function',
+                'target': done_fn,
+                'args' : []
+            });
 
-            // Trigger a djaxLoaded event when done
             $(window).trigger(
-                'djaxLoaded',
-                [{
-                    'url' : url,
-                    'title' : $result.filter('title').text(),
-                    'response' : response
-                }]
+                'djaxDeferReplacements',
+                [ replacements_config ]
             );
         }
     };
@@ -308,10 +368,13 @@
 
             var settings = $.extend({
                 'selector' : undefined,
+                'ignoreClass' : '',
                 'exceptions' : [],
+                'urlDataAttribute' : undefined,
                 'replaceBlockFunction' : undefined,
                 'ajax_data_parameter' : { },
-                'onDjaxClickCallback' : function (djaxClickData) { return; }
+                'onDjaxClickCallback' : function (djaxClickData) { return; },
+                'onHistoryPopStateCallback' : function () { return; }
             }, options);
             
             return this.each(function() {
@@ -326,6 +389,7 @@
                 }
 
                 var excludes = settings.exceptions,
+                    ignoreClass = settings.ignoreClass,
                     replaceBlockWith = (settings.replaceBlockFunction) ? settings.replaceBlockFunction: $.fn.replaceWith;
 
                 djaxing = false;
@@ -340,7 +404,7 @@
 
                 // Save excludes so that we can use them later...
                 $this.data('djaxUserExcludes', excludes);
-            
+
                 // Ensure that the history is correct when going from 2nd page to 1st
                 window.history.replaceState(
                     {
@@ -353,7 +417,7 @@
                 
                 // Exclude the link exceptions
                 // Only add a class to internal links
-                $this.find('a').filter(function () {
+                $this.find('a:not(.' + ignoreClass + ')').filter(function () {
                     return this.hostname === location.hostname;
                 }).addClass('dJAX_internal').on('click.djax', function (event) {
                     return _methods.attachClick.call($this, this, event);
@@ -362,9 +426,29 @@
                 // On new page load
                 $(window).bind('popstate', function (event) {
                     triggered = false;
+
                     if (event.originalEvent.state) {
-                        reqUrl = event.originalEvent.state.url;
-                        _methods.navigate.call($this, event.originalEvent.state.url, false);
+                        var targetUrl = event.originalEvent.state.url;
+
+                        // prevent IE <= 9 to navigate repeatedly to the current url
+                        var url_parts = targetUrl.split("#");
+                        if (url_parts.length === 2) {
+                            if (url_parts[0].indexOf(url_parts[1]) >= 0) { 
+                                popstateUrl = '';
+                                return;
+                            }
+                        }
+
+                        if (popstateUrl != targetUrl) {
+                            settings.onHistoryPopStateCallback();
+                            reqUrl = targetUrl;
+                            popstateUrl = targetUrl;
+                            _methods.navigate.call($this, popstateUrl, false);
+                        }
+                        else {
+                            // second time just reset the popstate url.
+                            popstateUrl = '';
+                        }
                     }
                 });
             });
@@ -382,7 +466,7 @@
             if (djaxing) {
                // push url in the queue and handle once the previous ajax
                // request has completed
-               url_queue.push([url, add_to_history]); 
+               url_queue.push([url, add_to_history, data]); 
 
                // handle queue
 			   setTimeout(function () { _methods.clearDjaxing.call($this)} , 1000);
