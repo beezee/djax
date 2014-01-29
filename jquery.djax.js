@@ -50,15 +50,22 @@
                 var url_addToHist = url_queue.pop();
                 url_queue = [];
 
-
                 var url = url_addToHist[0],
                     addToHistory = url_addToHist[1],
-                    urlData = url_addToHist[2];
-                methods.navigate.call($this, url, addToHistory, urlData);
+                    urlData = url_addToHist[2],
+                    method = url_addToHist[3],
+                    requestParameters = url_addToHist[4];
+
+                methods.navigate.call($this, url, addToHistory, urlData, method, requestParameters);
             }
         },
-        'navigate' : function (url, add_to_history) {
+        'navigate' : function (url, add_to_history, method) {
             var $this = this;
+
+            // decide which method to use for the ajax call (POST/GET allowed)
+            if (method !== 'POST') {
+                method = 'GET';
+            }
 
             var blockSelector = $this.data('djaxBlockSelector');
 			var blocks = $(blockSelector);
@@ -82,6 +89,7 @@
 			$.ajax({
 				'url' : url,
                 'data' : ajax_data,
+                'type' : method, // "GET" or "POST"
                 'crossDomain' : true,
 				'success' : function (responseData, textStatus, jqXHR) {
                     // use the url shown indicated in the response if possible
@@ -152,7 +160,7 @@
 
             // call blocking callback
             var settings = $this.data('settings');
-            settings.onDjaxClickCallback.call($this, djaxClickData);
+            settings.onDjaxClickCallback.call($this, djaxClickData, {});
 
             var urlDataAttribute = settings.urlDataAttribute;
             if (typeof urlDataAttribute !== 'undefined') {
@@ -164,7 +172,7 @@
             }
 
 			triggered = false;
-			_methods.navigate.call($this, link.attr('href'), true);
+			_methods.navigate.call($this, link.attr('href'), true, 'GET');
 		},
         'replaceBlocks' : function (url, add, currentBlocks, response) {
             var $this = this;
@@ -172,7 +180,7 @@
             var settings = $this.data('settings');
 
             if (url !== reqUrl) {
-                _methods.navigate.call($this, reqUrl, false);
+                _methods.navigate.call($this, reqUrl, false, 'GET');
                 return true;
             }
 
@@ -373,7 +381,16 @@
                 'urlDataAttribute' : undefined,
                 'replaceBlockFunction' : undefined,
                 'ajax_data_parameter' : { },
-                'onDjaxClickCallback' : function (djaxClickData) { return; },
+                /*
+                 * Called synchronously before ajax call starts.
+                 *
+                 * - djaxClickData: element or identifier of element the
+                 *   user interacted with;
+                 *
+                 * - requestParameters: parameters that will be included in the
+                 *   ajax call. This is an object.
+                 */
+                'onDjaxClickCallback' : function (djaxClickData, requestParameters) { return; },
                 'onHistoryPopStateCallback' : function () { return; }
             }, options);
             
@@ -443,7 +460,7 @@
                             settings.onHistoryPopStateCallback();
                             reqUrl = targetUrl;
                             popstateUrl = targetUrl;
-                            _methods.navigate.call($this, popstateUrl, false);
+                            _methods.navigate.call($this, popstateUrl, false, 'GET');
                         }
                         else {
                             // second time just reset the popstate url.
@@ -456,7 +473,7 @@
         'is_djaxing' : function () {
             return djaxing;
         },
-        'navigate' : function (url, add_to_history, data) {
+        'navigate' : function (url, add_to_history, data, method, requestParameters) {
             var $this = this;
 
             if (typeof data === 'undefined') {
@@ -466,7 +483,7 @@
             if (djaxing) {
                // push url in the queue and handle once the previous ajax
                // request has completed
-               url_queue.push([url, add_to_history, data]); 
+               url_queue.push([url, add_to_history, data, method, requestParameters]); 
 
                // handle queue
 			   setTimeout(function () { _methods.clearDjaxing.call($this)} , 1000);
@@ -478,10 +495,10 @@
 
                 // call blocking callback
                 var settings = $this.data('settings');
-                settings.onDjaxClickCallback.call($this, data);
+                settings.onDjaxClickCallback.call($this, data, requestParameters);
 
                 reqUrl = url;
-                _methods.navigate.call($this, url, add_to_history);
+                _methods.navigate.call($this, url, add_to_history, method);
             }
         },
         'set_ajax_data_parameter' : function (ajax_parameters_func_or_obj) {
