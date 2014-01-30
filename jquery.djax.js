@@ -59,6 +59,13 @@
                 methods.navigate.call($this, url, addToHistory, urlData, method, requestParameters);
             }
         },
+        'getUrlFromHeaders' : function (defaultUrl, jqXHR) {
+            var targetUrl = jqXHR.getResponseHeader("TargetUrl");       
+            if (typeof targetUrl === 'undefined') {                     
+                targetUrl = defaultUrl;                                        
+            }                                                            
+            return targetUrl;
+        },
         'navigate' : function (url, add_to_history, method) {
             var $this = this;
 
@@ -92,22 +99,20 @@
                 'type' : method, // "GET" or "POST"
                 'crossDomain' : true,
 				'success' : function (responseData, textStatus, jqXHR) {
-                    // use the url shown indicated in the response if possible
-                    var target_url = jqXHR.getResponseHeader("TargetUrl");
-                    if (typeof target_url === 'undefined') {
-                        target_url = url;
-                    }
-                    else {
-                        // trust the header
-                        reqUrl = target_url;
-                    }
-					_methods.replaceBlocks.call($this, target_url, add_to_history, blocks, responseData);
+                    // get url from headers
+                    var targetUrl = _methods.getUrlFromHeaders.call($this, url, jqXHR);
+
+                    // keep url we are going to
+                    reqUrl = targetUrl;
+
+					_methods.replaceBlocks.call($this, targetUrl, add_to_history, blocks, responseData);
 				},
 				'error' : function (jqXHR, textStatus, errorThrown) {
                     if (textStatus === 'error' 
                         && (jqXHR.status === 404 || 
                             errorThrown === "" || 
                             typeof jqXHR.responseText === 'undefined')) {
+                        
 
                         // just "browse" to the url provided to handle redirects
                         window.location.href = this.url;
@@ -118,7 +123,14 @@
                         // correct content type is not set by the webserver -
                         // (e.g., with content type set to application/json an
                         // error may be returned)
-                        _methods.replaceBlocks.call($this, url, add_to_history, blocks, jqXHR['responseText']);
+
+                        // try to get url from the headers
+                        var targetUrl = _methods.getUrlFromHeaders.call($this, url, jqXHR);
+
+                        // keep url we are going to
+                        reqUrl = targetUrl;
+
+                        _methods.replaceBlocks.call($this, targetUrl, add_to_history, blocks, jqXHR['responseText']);
                     }
 				}
 			});
