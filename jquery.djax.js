@@ -231,8 +231,8 @@
             //
             document.title = $result.filter('title').text();
 
-            // parse new blocks
-            var $newBlocks = $(response).find(blockSelector);
+            // parse new blocks (wrap reponse to obtain all the descendants)
+            var $newBlocks = $('<div>' + response + '</div>').find(blockSelector);
 
             //
             // Case in which blocks need to be replaced
