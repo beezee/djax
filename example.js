@@ -24,7 +24,12 @@ jQuery('document').ready(function($) {
 
     }
 
-   $('body').djax('.one-third', [], transition);
+   $('body').djax({
+       'selector' : '.one-third', 
+       'exceptions' : [], 
+       'replaceBlockFunction' : transition
+   });
+
    $(window).bind('djaxLoad', function(e, params) {
     console.log($('<div>'+params.response+'</div>'));
    })
