@@ -32,7 +32,7 @@
 // ==/ClosureCompiler==
 // http://closure-compiler.appspot.com/home
 
-(function ($, exports) {
+;(function ($, exports) {
 	'use strict';
 
 	$.fn.djax = function (selector, exceptions, replaceBlockWithFunc) {
@@ -85,6 +85,9 @@
 
 			// From this point on, we handle the behaviour
 			event.preventDefault();
+			
+			//Allow for touch events - http://stackoverflow.com/a/11507558
+			event.stopPropagation();
 
 			// If we're already doing djaxing, return now and silently fail
 			if (self.djaxing) {
@@ -143,9 +146,10 @@
 					    newBlock = newBlocks.filter(id),
 					    block = $(this);
 					
+					// Only add a class to internal links and allow for touch events - http://stackoverflow.com/a/11507558
 					$('a', newBlock).filter(function () {
 						return this.hostname === location.hostname;
-					}).addClass('dJAX_internal').on('click', function (event) {
+					}).addClass('dJAX_internal').on('click touchstart', function (event) {
 						return self.attachClick(this, event);
 					});
 					
@@ -182,10 +186,10 @@
 						}
 					}
 
-									// Only add a class to internal links
+					// Only add a class to internal links and allow for touch events - http://stackoverflow.com/a/11507558
 					$('a', newBlock).filter(function () {
 						return this.hostname === location.hostname;
-					}).addClass('dJAX_internal').on('click', function (event) {
+					}).addClass('dJAX_internal').on('click touchstart', function (event) {
 						return self.attachClick(this, event);
 					});
 
@@ -216,10 +220,10 @@
 			});
 		}; /* End self.navigate */
 
-		// Only add a class to internal links
+		// Only add a class to internal links and allow for touch events - http://stackoverflow.com/a/11507558
 		$(this).find('a').filter(function () {
 			return this.hostname === location.hostname;
-		}).addClass('dJAX_internal').on('click', function (event) {
+		}).addClass('dJAX_internal').on('click touchstart', function(event){
 			return self.attachClick(this, event);
 		});
 
